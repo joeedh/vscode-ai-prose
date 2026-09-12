@@ -307,6 +307,23 @@ describe("App", () => {
 		expect((q(".model-other") as HTMLInputElement).value).toBe("mistralai/mistral-large");
 	});
 
+	it("keeps the chosen model through later host messages", async () => {
+		mount();
+		await emit(loaded, models);
+		const sel = q(".model-sel") as HTMLSelectElement;
+		choose(sel, "z-ai/glm-5.3-flash");
+		await emit(models, { type: "threads", current: [thread], other: [] }, { type: "turnStarted" }, { type: "messageDelta", text: "hi" });
+		expect((q(".model-sel") as HTMLSelectElement).value).toBe("z-ai/glm-5.3-flash");
+		choose(q(".model-sel") as HTMLSelectElement, "__other");
+		await flush();
+		const field = q(".model-other") as HTMLInputElement;
+		type(field, "mistralai/mistral-large");
+		key(field, "Enter");
+		await emit(models);
+		expect((q(".model-sel") as HTMLSelectElement).value).toBe("__other");
+		expect((q(".model-other") as HTMLInputElement).value).toBe("mistralai/mistral-large");
+	});
+
 	it("hides the Other field once the model list arrives with the current model", async () => {
 		mount();
 		await emit(loaded);

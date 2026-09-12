@@ -318,7 +318,13 @@ export function App({ transport }: { transport: Transport }) {
 		transport.post({ type: "ready" });
 	}, [transport]);
 
-	const post: Post = (msg) => transport.post(msg);
+	// The host sends no reply to setModel, so the dropdown would snap back on the next render without this
+	const post: Post = (msg) => {
+		transport.post(msg);
+		if (msg.type === "setModel") {
+			dispatch({ type: "model", model: msg.model });
+		}
+	};
 
 	return (
 		<section class="panel" aria-label="ai-prose">

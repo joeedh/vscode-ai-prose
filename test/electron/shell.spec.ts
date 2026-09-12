@@ -49,6 +49,7 @@ test.describe("Electron shell", () => {
 
 	test("accepting a proposed edit writes the file and a transcript", async ({ shell }) => {
 		await focusComment(shell);
+		await shell.page.getByLabel("Model").selectOption("z-ai/glm-5.3-flash");
 		shell.server.script({ toolCalls: [writeCall("c1", "Pointer ids currently down. More than one means multi-touch.")] });
 		shell.server.script({ text: "Tightened it." });
 		await sendAndWaitForCard(shell, "Tighten this");
@@ -61,6 +62,9 @@ test.describe("Electron shell", () => {
 		await expect(shell.page.locator(".galley p")).toContainText("Pointer ids currently down.");
 		await expect(shell.page.getByLabel("Thread")).toHaveValue(/./);
 		await expect(shell.page.getByLabel("Thread").locator("option:checked")).toHaveText("Tighten this");
+		await expect(shell.page.getByLabel("Model")).toHaveValue("z-ai/glm-5.3-flash");
+		const chats = shell.server.requests.filter((r) => r.path.endsWith("/chat/completions"));
+		expect(chats.map((r) => (r.body as { model: string }).model)).toEqual(["z-ai/glm-5.3-flash", "z-ai/glm-5.3-flash"]);
 		const text = await fs.readFile(shell.file, "utf8");
 		expect(text).toContain("\t// Pointer ids currently down. More than one means multi-touch.\n\tprivate down");
 		expect(text).not.toContain("keeps track");

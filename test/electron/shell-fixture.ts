@@ -43,6 +43,10 @@ export const test = base.extend<{ shell: Shell; sampleText: string | undefined }
 		let server: FakeOpenRouter | undefined;
 		try {
 			server = await startFakeOpenRouter();
+			server.scriptModels([
+				{ id: "anthropic/claude-sonnet-5", supported_parameters: ["tools"] },
+				{ id: "z-ai/glm-5.3-flash", supported_parameters: ["tools"] },
+			]);
 			const cdpPort = await freePort();
 			const file = path.join(profileDir, "work", "sample.ts");
 			await fs.mkdir(path.dirname(file), { recursive: true });

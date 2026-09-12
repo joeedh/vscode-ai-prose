@@ -341,6 +341,24 @@ describe("Session", () => {
 		expect(loaded.mode).toBe("file");
 	});
 
+	it("sends the chosen model and carries it into the next thread", async () => {
+		const r = rig();
+		await r.session.handle({ type: "ready" });
+		await r.session.handle({ type: "setModel", model: "google/gemini-2.5-pro" });
+		server.script({ text: "Ok." });
+		await r.session.send("Hello");
+		expect((chats(server)[0].body as { model: string }).model).toBe("google/gemini-2.5-pro");
+		expect(r.host.settings.model).toBe("google/gemini-2.5-pro");
+		expect((await r.store.load(r.session.thread!.id)).model).toBe("google/gemini-2.5-pro");
+
+		await r.session.handle({ type: "newThread" });
+		const loaded = r.messages.filter((m) => m.type === "threadLoaded").at(-1) as Extract<HostToUi, { type: "threadLoaded" }>;
+		expect(loaded.model).toBe("google/gemini-2.5-pro");
+		server.script({ text: "Ok." });
+		await r.session.send("Again");
+		expect((chats(server)[1].body as { model: string }).model).toBe("google/gemini-2.5-pro");
+	});
+
 	it("asks for a key before sending when none is stored", async () => {
 		const r = rig();
 		r.host.secrets.clear();

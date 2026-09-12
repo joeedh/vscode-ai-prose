@@ -47,10 +47,13 @@ export const initialState: State = {
 	models: [],
 };
 
-export type Action = { type: "host"; msg: HostToUi } | { type: "sent"; text: string } | { type: "stopped" };
+export type Action = { type: "host"; msg: HostToUi } | { type: "sent"; text: string } | { type: "stopped" } | { type: "model"; model: string };
 
 /** Applies a host message or a local action to the state without mutating it. */
 export function reduce(state: State, action: Action): State {
+	if (action.type === "model") {
+		return { ...state, model: action.model, thread: state.thread && { ...state.thread, model: action.model } };
+	}
 	if (action.type === "sent") {
 		return { ...state, running: true, entries: [...state.entries, { kind: "user", text: action.text }] };
 	}
