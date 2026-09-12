@@ -3,9 +3,16 @@
 out/**
 node_modules/**
 src/**
+test/**
+docs/**
+keys/**
+test-results/**
 .gitignore
+.npmrc
 .yarnrc
 esbuild.js
+vitest.config.ts
+vitest.live.config.ts
 vsc-extension-quickstart.md
 **/tsconfig.json
 **/eslint.config.mjs

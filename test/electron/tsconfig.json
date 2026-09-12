@@ -4,21 +4,19 @@
         "moduleResolution": "NodeNext",
         "target": "ES2022",
         "lib": [
-            "ES2022"
+            "ES2022",
+            "DOM"
         ],
         "types": [
-            "node",
-            "mocha"
+            "node"
         ],
-        "sourceMap": true,
-        "rootDir": "src",
         "strict": true,
+        "noEmit": true,
         "skipLibCheck": true
     },
     "include": [
-        "src"
-    ],
-    "exclude": [
-        "src/ui"
+        ".",
+        "../../src/core/protocol.ts",
+        "../../src/test/fake-openrouter.ts"
     ]
 }

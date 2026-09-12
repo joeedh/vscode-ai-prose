@@ -1,7 +1,9 @@
 import typescriptEslint from "typescript-eslint";
 
 export default [{
-    files: ["**/*.ts"],
+    ignores: ["dist/**", "out/**", "node_modules/**", ".vscode-test/**", "test-results/**"],
+}, {
+    files: ["**/*.ts", "**/*.tsx"],
 }, {
     plugins: {
         "@typescript-eslint": typescriptEslint.plugin,
@@ -11,6 +13,9 @@ export default [{
         parser: typescriptEslint.parser,
         ecmaVersion: 2022,
         sourceType: "module",
+        parserOptions: {
+            ecmaFeatures: { jsx: true },
+        },
     },
 
     rules: {

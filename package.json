@@ -12,12 +12,66 @@
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "panel": [
+        {
+          "id": "aiProse",
+          "title": "Prose",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "aiProse": [
+        {
+          "type": "webview",
+          "id": "aiProse.panel",
+          "name": "Prose"
+        }
+      ]
+    },
     "commands": [
       {
-        "command": "ai-prose.helloWorld",
-        "title": "Hello World"
+        "command": "ai-prose.open",
+        "title": "Prose: Open"
+      },
+      {
+        "command": "ai-prose.newThread",
+        "title": "Prose: New Thread"
+      },
+      {
+        "command": "ai-prose.setApiKey",
+        "title": "Prose: Set OpenRouter API Key"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Prose",
+      "properties": {
+        "aiProse.defaultModel": {
+          "type": "string",
+          "default": "anthropic/claude-sonnet-5",
+          "description": "OpenRouter model id used for new threads."
+        },
+        "aiProse.systemPrompt": {
+          "type": "string",
+          "default": "",
+          "description": "System prompt for new threads. Empty uses the built-in default."
+        },
+        "aiProse.wrapColumn": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "default": null,
+          "description": "Fixed wrap column for restored prose. Empty derives it from the original block."
+        },
+        "aiProse.baseUrl": {
+          "type": "string",
+          "default": "https://openrouter.ai/api/v1",
+          "description": "OpenRouter API base URL."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "pnpm run package",
@@ -28,22 +82,43 @@
     "package": "pnpm run check-types && pnpm run lint && node esbuild.js --production",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
-    "check-types": "tsc --noEmit",
-    "lint": "eslint src",
-    "test": "vscode-test"
+    "check-types": "tsc --noEmit && tsc --noEmit -p src/ui && tsc --noEmit -p test/electron",
+    "lint": "eslint src test",
+    "test": "pnpm run test:core && pnpm run test:vscode && pnpm run test:electron",
+    "test:core": "vitest run",
+    "test:vscode": "pnpm run compile-tests && pnpm run compile && vscode-test",
+    "test:electron": "pnpm run compile && playwright test -c test/electron/playwright.config.ts",
+    "test:live": "vitest run --config vitest.live.config.ts",
+    "electron": "node esbuild.js && electron dist/electron/main.js"
+  },
+  "dependencies": {
+    "preact": "^10.24.0"
   },
   "devDependencies": {
-    "@types/vscode": "^1.137.0",
+    "@fontsource-variable/literata": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/ibm-plex-sans": "^5.3.0",
+    "@playwright/test": "^1.63.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "24.x",
-    "typescript-eslint": "^8.61.1",
-    "eslint": "^10.5.0",
-    "esbuild": "^0.28.1",
-    "npm-run-all": "^4.1.5",
-    "typescript": "^6.0.3",
+    "@types/vscode": "^1.137.0",
     "@vscode/test-cli": "^0.0.15",
-    "@vscode/test-electron": "^3.0.0"
+    "@vscode/test-electron": "^3.0.0",
+    "electron": "^44.3.0",
+    "esbuild": "^0.28.1",
+    "eslint": "^10.5.0",
+    "jsdom": "^30.0.1",
+    "npm-run-all": "^4.1.5",
+    "playwright": "^1.63.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.1",
+    "vitest": "^5.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "electron",
+      "esbuild"
+    ]
   },
   "overrides": {
     "diff": "^8.0.4",
