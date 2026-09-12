@@ -13,9 +13,15 @@ test-results/**
 esbuild.js
 vitest.config.mts
 vitest.live.config.mts
-vsc-extension-quickstart.md
 **/tsconfig.json
 **/eslint.config.mjs
 **/*.map
 **/*.ts
 **/.vscode-test.*
+CLAUDE.md
+req.md
+pnpm-lock.yaml
+dist/electron/**
+dist/shell.*
+media/electron.html
+.commentlintrc.jsonc
