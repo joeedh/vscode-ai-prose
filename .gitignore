@@ -1,0 +1,7 @@
+node_modules
+keys/
+out/
+dist/
+.vscode-test/
+test-results/
+playwright-report/
