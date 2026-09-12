@@ -1,71 +1,73 @@
-# ai-prose README
+# ai-prose
 
-This is the README for your extension "ai-prose". After writing up a brief description, we recommend including the following sections.
+An LLM prose editor for code comments and markdown paragraphs. The model sees
+one block at a time with its comment syntax stripped, proposes a replacement
+through a tool call, and nothing reaches the file until you accept it.
 
-## Features
+Runs as a VS Code panel and as a standalone Electron shell. Both hosts share
+the same core and the same UI.
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+## Install
 
-For example if there is an image subfolder under your extension project workspace:
+- `pnpm install`
+- `pnpm compile` builds the extension, the Electron shell, and the UI into
+  dist/.
+- Press F5 in VS Code to run the extension, or `pnpm electron <file>` to open
+  a file in the shell.
 
-\!\[feature X\]\(images/feature-x.png\)
+## Set the OpenRouter key
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+- VS Code: run "Prose: Set OpenRouter API Key" from the command palette. The
+  key is kept in VS Code's secret storage.
+- Electron: the "Set key" link in the panel opens `<profile>/secrets.json`;
+  put the key in its `openrouterApiKey` field. The profile is
+  `~/.aiprose/electron-profile` unless `AIPROSE_PROFILE_DIR` says otherwise.
 
-## Requirements
+## Open the panel
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- VS Code: run "Prose: Open" with the cursor in a comment or a markdown
+  paragraph. The Prose view opens in the bottom panel beside Terminal and
+  Problems, and the galley shows the block it will edit. "Prose: New
+  Thread" starts over on the block under the cursor.
+- Electron: click a line in the file pane. An unstarted thread follows the
+  click; a started one keeps its block until you choose New thread.
 
-## Extension Settings
+Type a request and send it. A proposed edit appears as a card with Preview
+and Diff views. Accept writes it to the file as one undo step; Reject leaves
+the file alone and keeps the rejected text for copying. Stop rejects a
+pending edit and ends the turn.
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+## Modes
 
-For example:
+- Strict: the model can read only the block under edit.
+- File: the model can read the whole file with line numbers, and still writes
+  only the block. Switching modes starts a new thread.
 
-This extension contributes the following settings:
+## PROSE.md
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+A file named PROSE.md (any case) in the edited file's directory or any
+directory above it is appended to the system prompt as a style guide. The
+galley shows which one is in use, and the system prompt sheet shows where
+the search started when none was found.
 
-## Known Issues
+## Settings
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+| Setting | Effect |
+| --- | --- |
+| `aiProse.defaultModel` | Model id for new threads. |
+| `aiProse.systemPrompt` | Replaces the built-in system prompt when set. |
+| `aiProse.wrapColumn` | Fixed wrap column. Empty derives it from the original block, between 60 and 100. |
+| `aiProse.baseUrl` | OpenRouter API base URL. `AIPROSE_BASE_URL` overrides it. |
 
-## Release Notes
+Transcripts are stored one JSON file per thread under `~/.aiprose/transcripts`.
 
-Users appreciate release notes as you update your extension.
+## Development
 
-### 1.0.0
+- `pnpm test:core` runs the vitest suites for the core and the UI.
+- `pnpm test:electron` runs the Playwright suite against the shell.
+- `pnpm test:vscode` runs the extension tests in a VS Code test build.
+- `pnpm test:live` sends one real request through OpenRouter using the key in
+  keys/openrouter.txt.
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+docs/debugging.md records how each piece behaves and the failure modes met
+while building it.

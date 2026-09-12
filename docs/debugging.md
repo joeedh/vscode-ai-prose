@@ -1,7 +1,64 @@
 # Debugging guide
 
-Running notes on how the pieces behave in practice. Later waves add their
-own sections.
+Running notes on how the pieces behave in practice.
+
+## Running each host against the fake server
+
+- `startFakeOpenRouter()` in src/test/fake-openrouter.ts serves a scripted
+  reply per chat request on a free port and records every request. Set
+  `AIPROSE_BASE_URL` to its url and any non-empty key passes.
+- Electron: `AIPROSE_BASE_URL=<url> AIPROSE_PROFILE_DIR=<dir> pnpm electron
+  <file>`. The Playwright fixture in test/electron/shell-fixture.ts does
+  exactly this with a temp profile.
+- VS Code: the extension host reads `process.env.AIPROSE_BASE_URL` on each
+  `config()` call, so a test can set it after activation. From F5, set it in
+  the launch configuration's `env`.
+- Core only: build a `Session` with an in-memory `Host`, as
+  src/core/agent/session.test.ts does.
+
+## Where things live
+
+- Transcripts: `<home>/.aiprose/transcripts/<id>.json`, where `<home>` is
+  `AIPROSE_HOME` or the home directory. Line 1 holds the header so listing
+  never parses the messages.
+- Model cache: `<home>/.aiprose/models.json`, refreshed after an hour.
+- Electron profile: `AIPROSE_PROFILE_DIR` or `~/.aiprose/electron-profile`,
+  holding Chromium's data plus `secrets.json` and `settings.json`.
+- VS Code key: SecretStorage under `openrouterApiKey`. Settings: `aiProse.*`.
+
+## Attaching over CDP
+
+- Electron listens on `AIPROSE_CDP_PORT` (default 9337). Fetch
+  `http://127.0.0.1:<port>/json/version` to confirm, or connect Playwright
+  with `chromium.connectOverCDP`. The profile's `DevToolsActivePort` file
+  names the port actually in use.
+- VS Code needs `--remote-debugging-port=<port>` on its command line; the
+  test runner passes it. The webview is a separate `iframe` target on
+  `/json`; see the VS Code section below.
+- Never use 9222 for either host, so a stray browser session never attaches.
+
+## Unit detection limits
+
+- Comment markers inside string literals are read as comments. A `#` or
+  `//` in a string on its own line starts a run. The fixture
+  src/test/fixtures/units/hash.py records this as a known limitation.
+- A `*`-led list bullet inside a block comment without a gutter is read as a
+  gutter.
+- A nested markdown list item indented four spaces after a blank line is
+  read as indented code.
+- Tabs count as one column when deriving the wrap width.
+- Headings never wrap. A markdown paragraph whose longest line is over 100
+  columns is treated as soft-wrapped and never split unless
+  `aiProse.wrapColumn` is set. `Unit.width` of 0 means never split.
+- Restore keeps every line break the model produces and only splits lines
+  longer than the width. A model that pre-wraps at a narrower width yields
+  ragged comments; the Diff view shows it before accepting.
+
+## Prompt caching shows 0% on short threads
+
+Anthropic's minimum cacheable prefix is over a thousand tokens on most
+models. A short system prompt plus a short PROSE.md falls under it, so the
+usage line reads 0% from cache until the thread grows. This is expected.
 
 ## OpenRouter request and response shapes
 
