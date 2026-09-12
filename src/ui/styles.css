@@ -36,3 +36,209 @@
 	font-weight: 500;
 	src: url(../media/fonts/ibm-plex-mono-latin-500-normal.woff2) format("woff2");
 }
+
+/* Tokens. Light is the base; the dark set follows the system, an explicit
+   data-theme, or the VS Code body classes. */
+:root {
+	--ground: #F4F5F8;
+	--sheet: #FFFFFF;
+	--ink: #1C1F26;
+	--ink-2: #636A78;
+	--ink-3: #9AA1AE;
+	--line: #E2E5EB;
+	--line-2: #CDD2DB;
+	--pencil: #3B4FC8;
+	--pencil-ink: #FFFFFF;
+	--pencil-soft: #E7EAFA;
+	--del: #B3382F;
+	--del-bg: #FBEAE8;
+	--add: #2F7A4B;
+	--add-bg: #E6F4EA;
+	--shadow: 0 1px 2px rgba(28, 31, 38, .06), 0 8px 24px rgba(28, 31, 38, .08);
+	--prose: "Literata", Georgia, "Times New Roman", serif;
+	--chrome: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+	--file: var(--vscode-editor-font-family, "IBM Plex Mono"), "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) {
+		--ground: #15171C;
+		--sheet: #1D2027;
+		--ink: #E4E6EB;
+		--ink-2: #9AA1AE;
+		--ink-3: #6B7280;
+		--line: #2A2E37;
+		--line-2: #3A3F4A;
+		--pencil: #8DA5FF;
+		--pencil-ink: #15171C;
+		--pencil-soft: #252B45;
+		--del: #F08A7E;
+		--del-bg: #3A2320;
+		--add: #7FC79A;
+		--add-bg: #1F3327;
+		--shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .35);
+	}
+}
+:root[data-theme="dark"],
+body.vscode-dark,
+body.vscode-high-contrast {
+	--ground: #15171C;
+	--sheet: #1D2027;
+	--ink: #E4E6EB;
+	--ink-2: #9AA1AE;
+	--ink-3: #6B7280;
+	--line: #2A2E37;
+	--line-2: #3A3F4A;
+	--pencil: #8DA5FF;
+	--pencil-ink: #15171C;
+	--pencil-soft: #252B45;
+	--del: #F08A7E;
+	--del-bg: #3A2320;
+	--add: #7FC79A;
+	--add-bg: #1F3327;
+	--shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .35);
+}
+/* Last on purpose: a high-contrast-light body also carries vscode-high-contrast. */
+body.vscode-light,
+body.vscode-high-contrast-light {
+	--ground: #F4F5F8;
+	--sheet: #FFFFFF;
+	--ink: #1C1F26;
+	--ink-2: #636A78;
+	--ink-3: #9AA1AE;
+	--line: #E2E5EB;
+	--line-2: #CDD2DB;
+	--pencil: #3B4FC8;
+	--pencil-ink: #FFFFFF;
+	--pencil-soft: #E7EAFA;
+	--del: #B3382F;
+	--del-bg: #FBEAE8;
+	--add: #2F7A4B;
+	--add-bg: #E6F4EA;
+	--shadow: 0 1px 2px rgba(28, 31, 38, .06), 0 8px 24px rgba(28, 31, 38, .08);
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+	margin: 0;
+	padding: 0;
+	background: var(--ground);
+	color: var(--ink);
+	font: 13px/1.4 var(--chrome);
+	overflow: hidden;
+}
+#root { display: flex; flex-direction: column; }
+button, select, textarea, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--pencil); outline-offset: 2px; }
+
+.seg { display: inline-flex; border: 1px solid var(--line-2); border-radius: 4px; overflow: hidden; }
+.seg button { border: 0; background: transparent; padding: 3px 10px; color: var(--ink-2); }
+.seg button + button { border-left: 1px solid var(--line-2); }
+.seg button[aria-checked="true"] { background: var(--pencil-soft); color: var(--pencil); font-weight: 500; }
+
+.shell { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(420px, 640px); min-height: 0; }
+@media (max-width: 900px) {
+	.shell { grid-template-columns: minmax(0, 1fr); }
+	.file { display: none; }
+}
+
+/* File pane in the Electron shell. */
+.file { border-right: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; background: var(--ground); }
+.file-title { padding: 8px 16px; border-bottom: 1px solid var(--line); color: var(--ink-2); font-family: var(--file); font-size: 12px; }
+.file-body { overflow: auto; padding: 12px 0; font: 13px/1.6 var(--file); }
+.file-body .ln { display: grid; grid-template-columns: 44px 1fr; white-space: pre; }
+.file-body .ln > .n { text-align: right; padding-right: 14px; color: var(--ink-3); user-select: none; }
+.file-body .ln.unit { box-shadow: inset 2px 0 0 var(--pencil); background: var(--pencil-soft); }
+.file-body .ln.unit > .n { color: var(--pencil); }
+.file-body .ln.cursor > .c::after { content: ""; display: inline-block; width: 1.5px; height: 1.1em; background: var(--ink); vertical-align: text-bottom; margin-left: 1px; }
+
+/* The panel. This is what the VS Code tab shows. */
+.panel { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; height: 100%; background: var(--ground); }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--line); }
+.toolbar select {
+	appearance: none; -webkit-appearance: none;
+	background: var(--sheet) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%23636A78' stroke-width='1.5'/></svg>") no-repeat right 8px center;
+	border: 1px solid var(--line-2); border-radius: 4px;
+	padding: 4px 24px 4px 8px; min-width: 0;
+}
+.toolbar .thread-sel { flex: 1 1 220px; }
+.toolbar .model-sel { flex: 0 1 190px; }
+.toolbar .model-other { flex: 0 1 190px; background: var(--sheet); border: 1px solid var(--line-2); border-radius: 4px; padding: 4px 8px; }
+.quiet { border: 1px solid transparent; background: transparent; border-radius: 4px; padding: 4px 8px; color: var(--ink-2); }
+.quiet:hover { border-color: var(--line-2); color: var(--ink); }
+
+.thread { flex: 1; overflow: auto; padding: 20px 20px 8px; }
+.column { max-width: 72ch; display: flex; flex-direction: column; gap: 20px; }
+
+.galley { border-left: 2px solid var(--pencil); padding: 6px 0 6px 14px; display: flex; flex-direction: column; gap: 6px; }
+.galley.empty { border-left-color: var(--line-2); color: var(--ink-2); }
+.margin { color: var(--ink-2); display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.margin b { font-weight: 500; color: var(--ink); }
+.galley p { margin: 2px 0 0; font: 400 15px/1.55 var(--prose); max-width: 68ch; white-space: pre-wrap; }
+.galley .link { align-self: flex-start; }
+
+.msg { display: flex; flex-direction: column; gap: 4px; }
+.msg .who { color: var(--ink-2); font-weight: 500; }
+.msg .activity { color: var(--ink-2); }
+.msg p { margin: 0; font: 400 15px/1.55 var(--prose); max-width: 68ch; white-space: pre-wrap; }
+.msg p + p { margin-top: 8px; }
+.msg p:empty { display: none; }
+.caret { display: inline-block; width: 1.5px; height: 1em; background: var(--pencil); vertical-align: text-bottom; margin-left: 2px; }
+
+.edit { margin-top: 8px; background: var(--sheet); border: 1px solid var(--line); border-radius: 6px; box-shadow: var(--shadow); overflow: hidden; }
+.edit.rejected, .edit.accepted { box-shadow: none; }
+.edit .head { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.edit .head .title { font-weight: 500; }
+.edit .head .range { color: var(--ink-2); }
+.edit .head .seg { margin-left: auto; }
+.edit .body { overflow-x: auto; font: 13px/1.5 var(--file); padding: 8px 0; }
+.edit .ln { display: grid; grid-template-columns: 40px 16px 1fr; white-space: pre; color: var(--ink-2); }
+.edit .ln > .n { text-align: right; padding-right: 10px; color: var(--ink-3); user-select: none; }
+.edit .ln > .m { color: var(--ink-3); }
+.edit .ln.hot { color: var(--ink); }
+.edit .ln.hot > .n { color: var(--pencil); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.edit .body.diff .ln.del { color: var(--del); background: var(--del-bg); }
+.edit .body.diff .ln.add { color: var(--add); background: var(--add-bg); }
+.edit .body.diff .ln.del > .m::before { content: "−"; }
+.edit .body.diff .ln.add > .m::before { content: "+"; }
+.edit .foot { display: flex; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--line); }
+.edit .foot .primary { margin-left: auto; }
+.primary { background: var(--pencil); color: var(--pencil-ink); border: 1px solid var(--pencil); border-radius: 4px; padding: 5px 12px; font-weight: 500; }
+.secondary { background: transparent; color: var(--ink-2); border: 1px solid var(--line-2); border-radius: 4px; padding: 5px 12px; }
+.secondary:hover { color: var(--ink); }
+.edit.rejected pre { margin: 0; padding: 10px 12px; font: 13px/1.5 var(--file); color: var(--ink-2); white-space: pre-wrap; }
+.edit.rejected .head .quiet { margin-left: auto; }
+.edit.accepted .applied { display: flex; gap: 8px; align-items: center; width: 100%; text-align: left; border: 0; background: transparent; padding: 8px 12px; color: var(--ink-2); }
+.edit.accepted .applied .check { color: var(--add); }
+.edit.accepted .body { border-top: 1px solid var(--line); }
+
+.error { color: var(--ink-2); display: flex; flex-wrap: wrap; gap: 8px; }
+
+.composer { border-top: 1px solid var(--line); padding: 12px 20px 10px; display: flex; flex-direction: column; gap: 6px; }
+.composer .row { display: flex; gap: 8px; align-items: flex-end; max-width: 72ch; }
+.composer textarea {
+	flex: 1; resize: none; min-height: 38px; max-height: 9.5em;
+	background: var(--sheet); border: 1px solid var(--line-2); border-radius: 4px;
+	padding: 8px 10px; font: 400 14px/1.45 var(--prose);
+}
+.composer textarea::placeholder { color: var(--ink-3); font-family: var(--chrome); font-size: 13px; }
+.usage { color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+/* System prompt sheet. */
+.sheet-bg { position: fixed; inset: 0; background: rgba(0, 0, 0, .25); }
+.sheet { position: fixed; top: 0; right: 0; bottom: 0; width: min(520px, 100%); background: var(--sheet); border-left: 1px solid var(--line); box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 12px; padding: 16px 20px; }
+.sheet h2 { margin: 0; font: 500 15px/1.3 var(--chrome); }
+.sheet .margin { flex-direction: column; gap: 2px; }
+.sheet textarea { flex: 1; resize: none; background: var(--ground); border: 1px solid var(--line-2); border-radius: 4px; padding: 10px; font: 400 14px/1.5 var(--prose); }
+.sheet .foot { display: flex; gap: 8px; align-items: center; }
+.sheet .foot .primary { margin-left: auto; }
+.link { background: none; border: 0; padding: 0; color: var(--pencil); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+
+@media (prefers-reduced-motion: no-preference) {
+	.edit.pending { animation: arrive 120ms ease-out; }
+	.edit.accepted, .edit.rejected { animation: settle 160ms ease-out; }
+	@keyframes arrive { from { opacity: 0; transform: translateY(2px); } }
+	@keyframes settle { from { opacity: .6; } }
+}
