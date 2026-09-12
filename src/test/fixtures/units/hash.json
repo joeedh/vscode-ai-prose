@@ -1,0 +1,10 @@
+{
+  "file": "hash.py",
+  "languageId": "python",
+  "cases": [
+    { "name": "shebang is never a run", "line": 0, "error": "Put the cursor in a comment or a paragraph to start." },
+    { "name": "run after the shebang", "line": 1, "range": [1, 2], "kind": "lineRun", "label": "one # run", "text": ["Header comment."] },
+    { "name": "indented run", "line": 5, "range": [5, 7], "kind": "lineRun", "label": "one # run", "text": ["Indented one.", "Indented two."] },
+    { "name": "marker inside a string is still a run (known limitation)", "line": 10, "range": [10, 11], "kind": "lineRun", "label": "one # run", "text": ["Inside a string, still detected."] }
+  ]
+}

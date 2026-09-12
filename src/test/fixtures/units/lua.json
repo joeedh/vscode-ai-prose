@@ -1,0 +1,9 @@
+{
+  "file": "lua.lua",
+  "languageId": "lua",
+  "cases": [
+    { "name": "dash run", "line": 0, "range": [0, 2], "kind": "lineRun", "label": "one -- run", "text": ["Dash run.", "Second dash."] },
+    { "name": "long bracket block", "line": 4, "range": [3, 6], "kind": "block", "label": "one --[[ ]] block", "text": ["Long block."] },
+    { "name": "inline long bracket block", "line": 6, "range": [6, 7], "kind": "block", "label": "one --[[ ]] block", "text": ["inline block"] }
+  ]
+}

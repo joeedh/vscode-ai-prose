@@ -11,8 +11,8 @@ test-results/**
 .npmrc
 .yarnrc
 esbuild.js
-vitest.config.ts
-vitest.live.config.ts
+vitest.config.mts
+vitest.live.config.mts
 vsc-extension-quickstart.md
 **/tsconfig.json
 **/eslint.config.mjs

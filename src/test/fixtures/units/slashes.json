@@ -1,0 +1,15 @@
+{
+  "file": "slashes.ts",
+  "languageId": "typescript",
+  "cases": [
+    { "name": "first run from its first line", "line": 2, "range": [2, 4], "kind": "lineRun", "label": "one // run", "text": ["First run line one.", "First run line two."], "width": 60 },
+    { "name": "first run from its second line", "line": 3, "range": [2, 4], "kind": "lineRun", "label": "one // run", "text": ["First run line one.", "First run line two."] },
+    { "name": "run after a blank line is separate", "line": 5, "range": [5, 6], "kind": "lineRun", "label": "one // run", "text": ["Second run after a blank."] },
+    { "name": "trailing comment on a code line is not a run", "line": 6, "error": "Put the cursor in a comment or a paragraph to start." },
+    { "name": "run ending at code", "line": 8, "range": [7, 9], "kind": "lineRun", "label": "one // run", "text": ["Run ending at code.", "Still the run."] },
+    { "name": "indented run with an empty marker line", "line": 11, "range": [10, 13], "kind": "lineRun", "label": "one // run", "text": ["Indented comment.", "", "After an empty marker line."] },
+    { "name": "doc and bang markers join a run holding a list", "line": 18, "range": [15, 21], "kind": "lineRun", "label": "one // run", "text": ["Doc line.", "Bang line.", "Items:", "- one", "  continued", "- two"] },
+    { "name": "blank line", "line": 1, "error": "Put the cursor in a comment or a paragraph to start." },
+    { "name": "code line", "line": 0, "error": "Put the cursor in a comment or a paragraph to start." }
+  ]
+}

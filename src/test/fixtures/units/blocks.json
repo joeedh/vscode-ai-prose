@@ -1,0 +1,16 @@
+{
+  "file": "blocks.ts",
+  "languageId": "typescript",
+  "cases": [
+    { "name": "gutter block from a body line", "line": 1, "range": [0, 4], "kind": "block", "label": "one /* */ block", "text": ["Gutter block line one.", "Gutter block line two."] },
+    { "name": "gutter block from its opener", "line": 0, "range": [0, 4], "kind": "block", "label": "one /* */ block", "text": ["Gutter block line one.", "Gutter block line two."] },
+    { "name": "gutter block from its closer", "line": 3, "range": [0, 4], "kind": "block", "label": "one /* */ block", "text": ["Gutter block line one.", "Gutter block line two."] },
+    { "name": "code after a block is outside it", "line": 4, "error": "Put the cursor in a comment or a paragraph to start." },
+    { "name": "doc block", "line": 6, "range": [5, 8], "kind": "block", "label": "one /* */ block", "text": ["Doc block."] },
+    { "name": "single line block", "line": 9, "range": [9, 10], "kind": "block", "label": "one /* */ block", "text": ["Inline single line."] },
+    { "name": "block without a gutter", "line": 12, "range": [11, 15], "kind": "block", "label": "one /* */ block", "text": ["No gutter line one.", "No gutter line two."] },
+    { "name": "opener and closer inline with the text", "line": 16, "range": [15, 17], "kind": "block", "label": "one /* */ block", "text": ["Opener inline", "closer inline too"] },
+    { "name": "second opener on a line wins", "line": 18, "range": [18, 20], "kind": "block", "label": "one /* */ block", "text": ["b", "ends here"] },
+    { "name": "closer line of a block opened mid-line", "line": 19, "range": [18, 20], "kind": "block", "label": "one /* */ block", "text": ["b", "ends here"] }
+  ]
+}

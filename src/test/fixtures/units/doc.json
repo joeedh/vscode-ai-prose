@@ -1,0 +1,29 @@
+{
+  "file": "doc.md",
+  "languageId": "markdown",
+  "cases": [
+    { "name": "front matter opener", "line": 0, "error": "The cursor is in front matter" },
+    { "name": "front matter body", "line": 1, "error": "The cursor is in front matter" },
+    { "name": "front matter closer", "line": 2, "error": "The cursor is in front matter" },
+    { "name": "ATX heading", "line": 4, "range": [4, 5], "kind": "heading", "label": "heading", "text": ["Heading one"], "width": 0 },
+    { "name": "blank line", "line": 5, "error": "Put the cursor in a comment or a paragraph to start." },
+    { "name": "paragraph", "line": 7, "range": [6, 8], "kind": "paragraph", "label": "paragraph", "text": ["A paragraph line one.", "A paragraph line two."], "width": 60 },
+    { "name": "soft-wrapped paragraph is never split", "line": 9, "range": [9, 10], "kind": "paragraph", "label": "paragraph", "text": ["This paragraph is a single very long line that runs well past one hundred columns so it counts as soft-wrapped text."], "width": 0 },
+    { "name": "list item with a wrapped line", "line": 11, "range": [11, 13], "kind": "listItem", "label": "list item", "text": ["- First item with a wrapped", "  continuation line."] },
+    { "name": "list item from its wrapped line", "line": 12, "range": [11, 13], "kind": "listItem", "label": "list item", "text": ["- First item with a wrapped", "  continuation line."] },
+    { "name": "nested list item", "line": 13, "range": [13, 14], "kind": "listItem", "label": "list item", "text": ["- Nested item."] },
+    { "name": "second list item", "line": 14, "range": [14, 15], "kind": "listItem", "label": "list item", "text": ["- Second item."] },
+    { "name": "setext heading from its text", "line": 16, "range": [16, 18], "kind": "heading", "label": "heading", "text": ["Setext heading"], "width": 0 },
+    { "name": "setext heading from its underline", "line": 17, "range": [16, 18], "kind": "heading", "label": "heading", "text": ["Setext heading"], "width": 0 },
+    { "name": "blockquote paragraph", "line": 20, "range": [19, 21], "kind": "blockquote", "label": "blockquote", "text": ["Quoted line one.", "Quoted line two."] },
+    { "name": "backtick fence opener", "line": 22, "error": "The cursor is in a code block" },
+    { "name": "backtick fence body", "line": 23, "error": "The cursor is in a code block" },
+    { "name": "backtick fence closer", "line": 24, "error": "The cursor is in a code block" },
+    { "name": "tilde fence body", "line": 27, "error": "The cursor is in a code block" },
+    { "name": "indented code", "line": 30, "error": "The cursor is in a code block" },
+    { "name": "table header", "line": 32, "error": "The cursor is in a table" },
+    { "name": "table delimiter row", "line": 33, "error": "The cursor is in a table" },
+    { "name": "table body row", "line": 34, "error": "The cursor is in a table" },
+    { "name": "numbered list item", "line": 36, "range": [36, 37], "kind": "listItem", "label": "list item", "text": ["1. Numbered item."] }
+  ]
+}

@@ -88,7 +88,7 @@
     "test:core": "vitest run",
     "test:vscode": "pnpm run compile-tests && pnpm run compile && vscode-test",
     "test:electron": "pnpm run compile && playwright test -c test/electron/playwright.config.ts",
-    "test:live": "vitest run --config vitest.live.config.ts",
+    "test:live": "vitest run --config vitest.live.config.mts",
     "electron": "node esbuild.js && electron dist/electron/main.js"
   },
   "dependencies": {

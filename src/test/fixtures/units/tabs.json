@@ -1,0 +1,8 @@
+{
+  "file": "tabs.ts",
+  "languageId": "typescript",
+  "cases": [
+    { "name": "tab indented run", "line": 1, "range": [1, 3], "kind": "lineRun", "label": "one // run", "text": ["Tab indented.", "Second."] },
+    { "name": "tab indented block", "line": 5, "range": [4, 7], "kind": "block", "label": "one /* */ block", "text": ["Tab block."] }
+  ]
+}

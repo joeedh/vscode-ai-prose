@@ -1,0 +1,8 @@
+{
+  "file": "crlf.ts",
+  "languageId": "typescript",
+  "crlf": true,
+  "cases": [
+    { "name": "run in a CRLF file", "line": 1, "range": [0, 2], "kind": "lineRun", "label": "one // run", "text": ["Windows line one.", "Windows line two."] }
+  ]
+}

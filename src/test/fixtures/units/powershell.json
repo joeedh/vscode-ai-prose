@@ -1,0 +1,8 @@
+{
+  "file": "powershell.ps1",
+  "languageId": "powershell",
+  "cases": [
+    { "name": "angle hash block", "line": 1, "range": [0, 3], "kind": "block", "label": "one <# #> block", "text": ["Block one."] },
+    { "name": "hash run", "line": 3, "range": [3, 4], "kind": "lineRun", "label": "one # run", "text": ["Hash line."] }
+  ]
+}
