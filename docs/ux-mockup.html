@@ -1,0 +1,400 @@
+<title>ai-prose Conversation Editor</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,500;7..72,400italic&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground: #F4F5F8;
+    --sheet: #FFFFFF;
+    --ink: #1C1F26;
+    --ink-2: #636A78;
+    --ink-3: #9AA1AE;
+    --line: #E2E5EB;
+    --line-2: #CDD2DB;
+    --pencil: #3B4FC8;
+    --pencil-ink: #FFFFFF;
+    --pencil-soft: #E7EAFA;
+    --del: #B3382F;
+    --del-bg: #FBEAE8;
+    --add: #2F7A4B;
+    --add-bg: #E6F4EA;
+    --shadow: 0 1px 2px rgba(28, 31, 38, .06), 0 8px 24px rgba(28, 31, 38, .08);
+    --prose: "Literata", Georgia, "Times New Roman", serif;
+    --chrome: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --file: var(--vscode-editor-font-family, "IBM Plex Mono"), "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #15171C;
+      --sheet: #1D2027;
+      --ink: #E4E6EB;
+      --ink-2: #9AA1AE;
+      --ink-3: #6B7280;
+      --line: #2A2E37;
+      --line-2: #3A3F4A;
+      --pencil: #8DA5FF;
+      --pencil-ink: #15171C;
+      --pencil-soft: #252B45;
+      --del: #F08A7E;
+      --del-bg: #3A2320;
+      --add: #7FC79A;
+      --add-bg: #1F3327;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #15171C;
+    --sheet: #1D2027;
+    --ink: #E4E6EB;
+    --ink-2: #9AA1AE;
+    --ink-3: #6B7280;
+    --line: #2A2E37;
+    --line-2: #3A3F4A;
+    --pencil: #8DA5FF;
+    --pencil-ink: #15171C;
+    --pencil-soft: #252B45;
+    --del: #F08A7E;
+    --del-bg: #3A2320;
+    --add: #7FC79A;
+    --add-bg: #1F3327;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font: 13px/1.4 var(--chrome);
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  button, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--pencil); outline-offset: 2px; }
+
+  /* Mockup-only controls. Not part of the product. */
+  .mock-bar {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    padding: 6px 12px;
+    border-bottom: 1px dashed var(--line-2);
+    color: var(--ink-2);
+    background: var(--ground);
+  }
+  .mock-bar span { margin-right: 4px; }
+  .mock-bar .seg { margin-right: 8px; }
+
+  .seg { display: inline-flex; border: 1px solid var(--line-2); border-radius: 4px; overflow: hidden; }
+  .seg button {
+    border: 0; background: transparent; padding: 3px 10px; color: var(--ink-2);
+  }
+  .seg button + button { border-left: 1px solid var(--line-2); }
+  .seg button[aria-pressed="true"] { background: var(--pencil-soft); color: var(--pencil); font-weight: 500; }
+
+  .shell { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(420px, 640px); min-height: 0; }
+  .shell.panel-only { grid-template-columns: minmax(0, 1fr); }
+  .shell.panel-only .file { display: none; }
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: minmax(0, 1fr); }
+    .file { display: none; }
+  }
+
+  /* File pane in the Electron shell. */
+  .file { border-right: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; background: var(--ground); }
+  .file-title { padding: 8px 16px; border-bottom: 1px solid var(--line); color: var(--ink-2); font-family: var(--file); font-size: 12px; }
+  .file-body { overflow: auto; padding: 12px 0; font: 13px/1.6 var(--file); }
+  .file-body .ln { display: grid; grid-template-columns: 44px 1fr; white-space: pre; }
+  .file-body .ln > .n { text-align: right; padding-right: 14px; color: var(--ink-3); user-select: none; }
+  .file-body .ln.unit { box-shadow: inset 2px 0 0 var(--pencil); background: var(--pencil-soft); }
+  .file-body .ln.unit > .n { color: var(--pencil); }
+  .file-body .ln.cursor > .c::after { content: ""; display: inline-block; width: 1.5px; height: 1.1em; background: var(--ink); vertical-align: text-bottom; margin-left: 1px; }
+  .kw { color: var(--pencil); }
+  .cm { color: var(--ink-2); }
+
+  /* The panel. This is what the VS Code tab shows. */
+  .panel { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--ground); }
+  .toolbar {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    padding: 10px 20px; border-bottom: 1px solid var(--line);
+  }
+  .toolbar select {
+    appearance: none; -webkit-appearance: none;
+    background: var(--sheet) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%23636A78' stroke-width='1.5'/></svg>") no-repeat right 8px center;
+    border: 1px solid var(--line-2); border-radius: 4px;
+    padding: 4px 24px 4px 8px; min-width: 0;
+  }
+  .toolbar .thread-sel { flex: 1 1 220px; }
+  .toolbar .model-sel { flex: 0 1 190px; }
+  .toolbar .spacer { flex: 1 1 0; }
+  .quiet { border: 1px solid transparent; background: transparent; border-radius: 4px; padding: 4px 8px; color: var(--ink-2); }
+  .quiet:hover { border-color: var(--line-2); color: var(--ink); }
+
+  .thread { flex: 1; overflow: auto; padding: 20px 20px 8px; }
+  .column { max-width: 72ch; display: flex; flex-direction: column; gap: 20px; }
+
+  .galley { border-left: 2px solid var(--pencil); padding: 6px 0 6px 14px; display: flex; flex-direction: column; gap: 6px; }
+  .margin { color: var(--ink-2); display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  .margin b { font-weight: 500; color: var(--ink); }
+  .galley p { margin: 2px 0 0; font: 400 15px/1.55 var(--prose); max-width: 68ch; }
+  .galley .stripped { color: var(--ink-3); font-size: 12px; }
+
+  .msg { display: flex; flex-direction: column; gap: 4px; }
+  .msg .who { color: var(--ink-2); font-weight: 500; }
+  .msg .activity { color: var(--ink-2); }
+  .msg p { margin: 0; font: 400 15px/1.55 var(--prose); max-width: 68ch; }
+  .msg p + p { margin-top: 8px; }
+
+  .edit { margin-top: 8px; background: var(--sheet); border: 1px solid var(--line); border-radius: 6px; box-shadow: var(--shadow); overflow: hidden; }
+  .edit.rejected { box-shadow: none; }
+  .edit .head { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .edit .head .title { font-weight: 500; }
+  .edit .head .range { color: var(--ink-2); }
+  .edit .head .seg { margin-left: auto; }
+  .edit .body { overflow-x: auto; font: 13px/1.5 var(--file); padding: 8px 0; }
+  .edit .ln { display: grid; grid-template-columns: 40px 16px 1fr; white-space: pre; color: var(--ink-2); }
+  .edit .ln > .n { text-align: right; padding-right: 10px; color: var(--ink-3); user-select: none; }
+  .edit .ln > .m { color: var(--ink-3); }
+  .edit .ln.hot { color: var(--ink); }
+  .edit .ln.hot > .n { color: var(--pencil); }
+  .edit .ln .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .edit .body.preview .ln.del { display: none; }
+  .edit .body.diff .ln.del { color: var(--del); background: var(--del-bg); }
+  .edit .body.diff .ln.add { color: var(--add); background: var(--add-bg); }
+  .edit .body.diff .ln.del > .m::before { content: "−"; }
+  .edit .body.diff .ln.add > .m::before { content: "+"; }
+  .edit .foot { display: flex; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--line); }
+  .edit .foot .primary { margin-left: auto; }
+  .primary { background: var(--pencil); color: var(--pencil-ink); border: 1px solid var(--pencil); border-radius: 4px; padding: 5px 12px; font-weight: 500; }
+  .secondary { background: transparent; color: var(--ink-2); border: 1px solid var(--line-2); border-radius: 4px; padding: 5px 12px; }
+  .secondary:hover { color: var(--ink); }
+  .edit.rejected pre { margin: 0; padding: 10px 12px; font: 13px/1.5 var(--file); color: var(--ink-2); white-space: pre-wrap; }
+  .edit.rejected .head .quiet { margin-left: auto; }
+
+  .composer { border-top: 1px solid var(--line); padding: 12px 20px 10px; display: flex; flex-direction: column; gap: 6px; }
+  .composer .row { display: flex; gap: 8px; align-items: flex-end; max-width: 72ch; }
+  .composer textarea {
+    flex: 1; resize: none; min-height: 38px; max-height: 9.5em;
+    background: var(--sheet); border: 1px solid var(--line-2); border-radius: 4px;
+    padding: 8px 10px; font: 400 14px/1.45 var(--prose);
+  }
+  .composer textarea::placeholder { color: var(--ink-3); font-family: var(--chrome); font-size: 13px; }
+  .usage { color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+  /* System prompt sheet. */
+  .sheet-bg { position: fixed; inset: 0; background: rgba(0, 0, 0, .25); }
+  .sheet { position: fixed; top: 0; right: 0; bottom: 0; width: min(520px, 100%); background: var(--sheet); border-left: 1px solid var(--line); box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 12px; padding: 16px 20px; }
+  .sheet h2 { margin: 0; font: 500 15px/1.3 var(--chrome); }
+  .sheet .margin { flex-direction: column; gap: 2px; }
+  .sheet textarea { flex: 1; resize: none; background: var(--ground); border: 1px solid var(--line-2); border-radius: 4px; padding: 10px; font: 400 14px/1.5 var(--prose); }
+  .sheet .foot { display: flex; gap: 8px; align-items: center; }
+  .sheet .foot .primary { margin-left: auto; }
+  .link { background: none; border: 0; padding: 0; color: var(--pencil); text-decoration: underline; text-underline-offset: 2px; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .edit.pending { animation: arrive 120ms ease-out; }
+    @keyframes arrive { from { opacity: 0; transform: translateY(2px); } }
+  }
+</style>
+
+<div class="mock-bar" aria-label="Mockup controls">
+  <span>Theme</span>
+  <div class="seg" id="theme-seg">
+    <button aria-pressed="false" data-theme="light">Light</button>
+    <button aria-pressed="true" data-theme="">System</button>
+    <button aria-pressed="false" data-theme="dark">Dark</button>
+  </div>
+  <span>View</span>
+  <div class="seg" id="view-seg">
+    <button aria-pressed="true" data-view="shell">Electron shell</button>
+    <button aria-pressed="false" data-view="panel">VS Code tab</button>
+  </div>
+</div>
+
+<div class="shell" id="shell">
+  <aside class="file" aria-label="File">
+    <div class="file-title">src/editor/pointer.ts</div>
+    <div class="file-body">
+<div class="ln"><span class="n">30</span><span class="c"><span class="kw">export class</span> PointerTracker {</span></div>
+<div class="ln"><span class="n">31</span><span class="c">  <span class="kw">private</span> el: HTMLElement;</span></div>
+<div class="ln"><span class="n">32</span><span class="c"></span></div>
+<div class="ln"><span class="n">33</span><span class="c">  <span class="cm">/** Fires once per gesture, on the first pointerdown. */</span></span></div>
+<div class="ln"><span class="n">34</span><span class="c">  onStart?: (e: PointerEvent) =&gt; <span class="kw">void</span>;</span></div>
+<div class="ln"><span class="n">35</span><span class="c"></span></div>
+<div class="ln"><span class="n">36</span><span class="c">  <span class="kw">private</span> captured = <span class="kw">false</span>;</span></div>
+<div class="ln"><span class="n">37</span><span class="c"></span></div>
+<div class="ln unit"><span class="n">38</span><span class="c"><span class="cm">  // keeps track of the pointer ids that are currently held down, we use this</span></span></div>
+<div class="ln unit cursor"><span class="n">39</span><span class="c"><span class="cm">  // to detect multi touch which is when there is more than one pointer id</span></span></div>
+<div class="ln unit"><span class="n">40</span><span class="c"><span class="cm">  // in the set at the same time</span></span></div>
+<div class="ln"><span class="n">41</span><span class="c">  <span class="kw">private</span> down = <span class="kw">new</span> Set&lt;number&gt;();</span></div>
+<div class="ln"><span class="n">42</span><span class="c"></span></div>
+<div class="ln"><span class="n">43</span><span class="c">  <span class="kw">constructor</span>(el: HTMLElement) {</span></div>
+<div class="ln"><span class="n">44</span><span class="c">    <span class="kw">this</span>.el = el;</span></div>
+<div class="ln"><span class="n">45</span><span class="c">    el.addEventListener(<span class="cm">"pointerdown"</span>, <span class="kw">this</span>.onDown);</span></div>
+<div class="ln"><span class="n">46</span><span class="c">    el.addEventListener(<span class="cm">"pointerup"</span>, <span class="kw">this</span>.onUp);</span></div>
+<div class="ln"><span class="n">47</span><span class="c">  }</span></div>
+<div class="ln"><span class="n">48</span><span class="c"></span></div>
+<div class="ln"><span class="n">49</span><span class="c">  <span class="cm">// does not inhibit the event from reaching other consumers</span></span></div>
+<div class="ln"><span class="n">50</span><span class="c">  <span class="kw">private</span> onDown = (e: PointerEvent) =&gt; {</span></div>
+<div class="ln"><span class="n">51</span><span class="c">    <span class="kw">this</span>.down.add(e.pointerId);</span></div>
+<div class="ln"><span class="n">52</span><span class="c">    <span class="kw">if</span> (<span class="kw">this</span>.down.size === 1) <span class="kw">this</span>.onStart?.(e);</span></div>
+<div class="ln"><span class="n">53</span><span class="c">  };</span></div>
+    </div>
+  </aside>
+
+  <section class="panel" aria-label="ai-prose">
+    <header class="toolbar">
+      <select class="thread-sel" aria-label="Thread">
+        <option>Plainer pointer comment</option>
+        <option>New thread</option>
+        <option disabled>── src/editor/pointer.ts ──</option>
+        <option>Caption on the onDown note</option>
+        <option disabled>── other files ──</option>
+        <option>README install paragraph</option>
+      </select>
+      <select class="model-sel" aria-label="Model">
+        <optgroup label="Anthropic">
+          <option>anthropic/claude-sonnet-5</option>
+          <option>anthropic/claude-opus-5</option>
+          <option>anthropic/claude-haiku-4.5</option>
+        </optgroup>
+        <optgroup label="Google">
+          <option>google/gemini-2.5-pro</option>
+          <option>google/gemini-2.5-flash</option>
+        </optgroup>
+        <optgroup label="Z.ai">
+          <option>z-ai/glm-5.3-flash</option>
+        </optgroup>
+        <option>Other model id…</option>
+      </select>
+      <div class="seg" role="radiogroup" aria-label="Mode" id="mode-seg">
+        <button aria-pressed="true" title="Only this comment or paragraph is visible to the model">Strict</button>
+        <button aria-pressed="false" title="The whole file is visible to the model">File</button>
+      </div>
+      <button class="quiet" id="open-sheet">System prompt</button>
+    </header>
+
+    <div class="thread">
+      <div class="column">
+        <article class="galley" aria-label="Block in view">
+          <div class="margin">
+            <span><b>src/editor/pointer.ts</b></span>
+            <span>lines 38–40</span>
+            <span>one // run</span>
+            <span>Style from ../PROSE.md</span>
+          </div>
+          <p>keeps track of the pointer ids that are currently held down, we use this to detect multi touch which is when there is more than one pointer id in the set at the same time</p>
+          <div class="stripped">Shown without the // prefixes. The model never sees them.</div>
+        </article>
+
+        <div class="msg">
+          <div class="who">You</div>
+          <p>Make this plainer. Two sentences at most.</p>
+        </div>
+
+        <div class="msg">
+          <div class="who">Editor</div>
+          <div class="activity">Read the block · Checked the edit range</div>
+          <p>The first sentence states what the set holds. The second says what more than one entry means.</p>
+          <div class="edit rejected">
+            <div class="head"><span class="title">Rejected edit</span><span class="range">lines 38–40</span><button class="quiet">Copy</button></div>
+<pre>// Pointer ids currently down. When the set holds more than one
+// id, a multi-touch gesture is in progress.</pre>
+          </div>
+        </div>
+
+        <div class="msg">
+          <div class="who">You</div>
+          <p>Keep "multi-touch". Drop "gesture".</p>
+        </div>
+
+        <div class="msg">
+          <div class="who">Editor</div>
+          <div class="activity">Checked the edit range</div>
+          <p>Same two sentences, without the word.</p>
+          <div class="edit pending" tabindex="0" aria-label="Proposed edit">
+            <div class="head">
+              <span class="title">Proposed edit</span><span class="range">lines 38–40</span>
+              <div class="seg" role="radiogroup" aria-label="View" id="pd-seg">
+                <button aria-pressed="true" data-body="preview">Preview</button>
+                <button aria-pressed="false" data-body="diff">Diff</button>
+              </div>
+            </div>
+            <div class="body preview" id="pd-body">
+<div class="ln"><span class="n">35</span><span class="m"></span><span></span></div>
+<div class="ln"><span class="n">36</span><span class="m"></span><span>  private captured = false;</span></div>
+<div class="ln"><span class="n">37</span><span class="m"></span><span></span></div>
+<div class="ln del"><span class="n">38</span><span class="m"><span class="sr">removed </span></span><span>  // keeps track of the pointer ids that are currently held down, we use this</span></div>
+<div class="ln del"><span class="n">39</span><span class="m"><span class="sr">removed </span></span><span>  // to detect multi touch which is when there is more than one pointer id</span></div>
+<div class="ln del"><span class="n">40</span><span class="m"><span class="sr">removed </span></span><span>  // in the set at the same time</span></div>
+<div class="ln hot add"><span class="n">38</span><span class="m"><span class="sr">added </span></span><span>  // Pointer ids currently down. When the set holds more than one</span></div>
+<div class="ln hot add"><span class="n">39</span><span class="m"><span class="sr">added </span></span><span>  // id, a multi-touch is in progress.</span></div>
+<div class="ln"><span class="n">40</span><span class="m"></span><span>  private down = new Set&lt;number&gt;();</span></div>
+<div class="ln"><span class="n">41</span><span class="m"></span><span></span></div>
+<div class="ln"><span class="n">42</span><span class="m"></span><span>  constructor(el: HTMLElement) {</span></div>
+            </div>
+            <div class="foot">
+              <button class="secondary">Reject</button>
+              <button class="primary">Accept edit</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="composer">
+      <div class="row">
+        <textarea rows="1" placeholder="Ask for a change" aria-label="Ask for a change"></textarea>
+        <button class="primary">Send</button>
+      </div>
+      <div class="usage">2 turns · 3.1k tokens · 78% from cache · $0.004</div>
+    </footer>
+  </section>
+</div>
+
+<div id="sheet-wrap" hidden>
+  <div class="sheet-bg" id="sheet-bg"></div>
+  <aside class="sheet" role="dialog" aria-label="System prompt">
+    <h2>System prompt</h2>
+    <div class="margin">
+      <span>Style guide found at <b>../PROSE.md</b> and added after this prompt.</span>
+      <span>Saved with every thread that uses it.</span>
+    </div>
+    <textarea aria-label="System prompt text">You edit one block of prose at a time. You see only the text the tools give you. Rewrite in plain declarative sentences. Do not add or remove facts. Keep the author's terms of art. When you are ready, write the block once with the write tool and stop.</textarea>
+    <div class="foot">
+      <button class="link">Reset to default</button>
+      <button class="primary" id="close-sheet">Save</button>
+    </div>
+  </aside>
+</div>
+
+<script>
+  function seg(el, fn) {
+    el.addEventListener("click", function (e) {
+      var b = e.target.closest("button");
+      if (!b) return;
+      el.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); });
+      fn(b);
+    });
+  }
+  seg(document.getElementById("theme-seg"), function (b) {
+    if (b.dataset.theme) document.documentElement.setAttribute("data-theme", b.dataset.theme);
+    else document.documentElement.removeAttribute("data-theme");
+  });
+  seg(document.getElementById("view-seg"), function (b) {
+    document.getElementById("shell").classList.toggle("panel-only", b.dataset.view === "panel");
+  });
+  seg(document.getElementById("mode-seg"), function () {});
+  seg(document.getElementById("pd-seg"), function (b) {
+    var body = document.getElementById("pd-body");
+    body.classList.toggle("preview", b.dataset.body === "preview");
+    body.classList.toggle("diff", b.dataset.body === "diff");
+  });
+  var wrap = document.getElementById("sheet-wrap");
+  document.getElementById("open-sheet").addEventListener("click", function () { wrap.hidden = false; });
+  document.getElementById("close-sheet").addEventListener("click", function () { wrap.hidden = true; });
+  document.getElementById("sheet-bg").addEventListener("click", function () { wrap.hidden = true; });
+  var ta = document.querySelector(".composer textarea");
+  ta.addEventListener("input", function () { ta.style.height = "auto"; ta.style.height = ta.scrollHeight + "px"; });
+</script>
