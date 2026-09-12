@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatUsage, initialState, rangeLabel, reduce, relativePath } from "./state";
+import { formatUsage, initialState, rangeLabel, reduce, relativePath, type State } from "./state";
 
 describe("reduce", () => {
 	it("streams deltas and activity into one assistant entry", () => {
@@ -17,6 +17,15 @@ describe("reduce", () => {
 		s = reduce(s, { type: "host", msg: { type: "editProposed", proposal: proposal() } });
 		s = reduce(s, { type: "host", msg: { type: "messageDelta", text: "b" } });
 		expect(s.entries.map((e) => e.kind)).toEqual(["assistant", "edit", "assistant"]);
+	});
+
+	it("takes the current thread's title from the thread list", () => {
+		const header = { id: "t1", title: "New thread", createdAt: "", updatedAt: "", filePath: "a.ts", mode: "strict" as const, model: "m" };
+		let s: State = { ...initialState, thread: header };
+		s = reduce(s, { type: "host", msg: { type: "threads", current: [{ ...header, title: "Tighten this" }], other: [] } });
+		expect(s.thread?.title).toBe("Tighten this");
+		s = reduce(s, { type: "host", msg: { type: "threads", current: [], other: [] } });
+		expect(s.thread?.title).toBe("Tighten this");
 	});
 
 	it("attaches a resolution to its proposal", () => {

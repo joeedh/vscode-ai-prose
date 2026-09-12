@@ -158,6 +158,8 @@ describe("Session", () => {
 		const resolved = await r.next("editResolved");
 		expect(resolved.resolution.status).toBe("accepted");
 		expect(resolved.resolution.range).toEqual({ start: 1, end: 2 });
+		const galley = r.messages.filter((m) => m.type === "galley").at(-1) as Extract<HostToUi, { type: "galley" }>;
+		expect(galley.unit).toMatchObject({ range: { start: 1, end: 2 }, text: "This comment was edited." });
 
 		const stored = await r.store.load(r.session.thread!.id);
 		expect(stored.edits).toHaveLength(1);

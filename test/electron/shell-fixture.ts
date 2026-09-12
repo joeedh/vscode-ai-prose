@@ -34,8 +34,10 @@ export async function freePort(): Promise<number> {
 	});
 }
 
-export const test = base.extend<{ shell: Shell }>({
-	shell: async ({}, use) => {
+export const test = base.extend<{ shell: Shell; sampleText: string | undefined }>({
+	/** Replaces the sample file's content before launch when a test needs a different file. */
+	sampleText: [undefined, { option: true }],
+	shell: async ({ sampleText }, use) => {
 		const profileDir = await fs.mkdtemp(path.join(os.tmpdir(), TEMP_PREFIX));
 		let app: ElectronApplication | undefined;
 		let server: FakeOpenRouter | undefined;
@@ -45,6 +47,9 @@ export const test = base.extend<{ shell: Shell }>({
 			const file = path.join(profileDir, "work", "sample.ts");
 			await fs.mkdir(path.dirname(file), { recursive: true });
 			await fs.copyFile(SAMPLE, file);
+			if (sampleText !== undefined) {
+				await fs.writeFile(file, sampleText);
+			}
 			await fs.writeFile(path.join(profileDir, "secrets.json"), JSON.stringify({ openrouterApiKey: "test-key" }));
 			app = await _electron.launch({
 				args: [MAIN, file],

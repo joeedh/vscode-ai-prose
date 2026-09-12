@@ -56,6 +56,11 @@ test.describe("Electron shell", () => {
 
 		await expect(shell.page.locator(".edit.accepted")).toBeVisible();
 		await expect(shell.page.locator(".file-body .ln").nth(1)).toContainText("Pointer ids currently down.");
+		await expect(shell.page.locator(".file-body .ln.unit")).toHaveCount(1);
+		await expect(shell.page.locator(".galley .margin")).toContainText("line 2");
+		await expect(shell.page.locator(".galley p")).toContainText("Pointer ids currently down.");
+		await expect(shell.page.getByLabel("Thread")).toHaveValue(/./);
+		await expect(shell.page.getByLabel("Thread").locator("option:checked")).toHaveText("Tighten this");
 		const text = await fs.readFile(shell.file, "utf8");
 		expect(text).toContain("\t// Pointer ids currently down. More than one means multi-touch.\n\tprivate down");
 		expect(text).not.toContain("keeps track");
@@ -82,6 +87,23 @@ test.describe("Electron shell", () => {
 		const text = await fs.readFile(shell.file, "utf8");
 		expect(text).toContain(ORIGINAL_COMMENT);
 		expect(text).not.toContain("Not this wording");
+	});
+
+	test.describe("with a long file", () => {
+		test.use({ sampleText: Array.from({ length: 400 }, (_, i) => `const v${i} = ${i};`).join("\n") });
+
+		test("keeps the composer on screen", async ({ shell }) => {
+			await expect(shell.page.locator(".file-body .ln")).toHaveCount(400);
+			await shell.app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(1000, 700));
+			const boxes = await shell.page.evaluate(() => {
+				const box = (sel: string) => document.querySelector(sel)!.getBoundingClientRect();
+				return { viewport: innerHeight, scroll: document.documentElement.scrollHeight, file: box(".file").height, composer: box(".composer").bottom };
+			});
+			expect(boxes.scroll).toBe(boxes.viewport);
+			expect(boxes.file).toBeLessThanOrEqual(boxes.viewport);
+			expect(boxes.composer).toBeLessThanOrEqual(boxes.viewport);
+			await expect(shell.page.getByLabel("Ask for a change")).toBeInViewport();
+		});
 	});
 
 	test("follows the color scheme", async ({ shell }) => {

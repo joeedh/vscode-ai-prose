@@ -307,6 +307,15 @@ describe("App", () => {
 		expect((q(".model-other") as HTMLInputElement).value).toBe("mistralai/mistral-large");
 	});
 
+	it("hides the Other field once the model list arrives with the current model", async () => {
+		mount();
+		await emit(loaded);
+		expect(q(".model-other")).not.toBeNull();
+		await emit(models);
+		expect(q(".model-other")).toBeNull();
+		expect((q(".model-sel") as HTMLSelectElement).value).toBe("anthropic/claude-sonnet-5");
+	});
+
 	it("lists threads with the current file first and posts openThread and newThread", async () => {
 		mount();
 		await emit(loaded, {

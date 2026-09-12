@@ -13,8 +13,10 @@ const NEW_THREAD = "__new";
 function Toolbar({ state, post, onOpenSheet }: { state: State; post: Post; onOpenSheet: () => void }) {
 	const known = state.models.some((g) => g.ids.includes(state.model));
 	const [other, setOther] = useState(known ? "" : state.model);
-	const [showOther, setShowOther] = useState(!known && state.model !== "");
-	const modelValue = known ? state.model : OTHER;
+	const [pickedOther, setPickedOther] = useState(false);
+	// The model list arrives after the thread, so the field follows the list rather than the first render
+	const showOther = pickedOther || (!known && state.model !== "");
+	const modelValue = known && !pickedOther ? state.model : OTHER;
 
 	const onThread = (e: Event) => {
 		const value = (e.currentTarget as HTMLSelectElement).value;
@@ -27,9 +29,9 @@ function Toolbar({ state, post, onOpenSheet }: { state: State; post: Post; onOpe
 	const onModel = (e: Event) => {
 		const value = (e.currentTarget as HTMLSelectElement).value;
 		if (value === OTHER) {
-			setShowOther(true);
+			setPickedOther(true);
 		} else {
-			setShowOther(false);
+			setPickedOther(false);
 			post({ type: "setModel", model: value });
 		}
 	};
@@ -38,6 +40,7 @@ function Toolbar({ state, post, onOpenSheet }: { state: State; post: Post; onOpe
 		if (id !== "" && id !== state.model) {
 			post({ type: "setModel", model: id });
 		}
+		setPickedOther(false);
 	};
 	const onMode = (mode: Mode) => {
 		if (mode !== state.mode) {
@@ -78,7 +81,7 @@ function Toolbar({ state, post, onOpenSheet }: { state: State; post: Post; onOpe
 					class="model-other"
 					aria-label="Model id"
 					placeholder="vendor/model"
-					value={other}
+					value={other !== "" || known ? other : state.model}
 					onInput={(e) => setOther((e.currentTarget as HTMLInputElement).value)}
 					onBlur={(e) => commitOther((e.currentTarget as HTMLInputElement).value)}
 					onKeyDown={(e) => {

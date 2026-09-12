@@ -137,16 +137,18 @@ button { cursor: pointer; }
 .seg button + button { border-left: 1px solid var(--line-2); }
 .seg button[aria-checked="true"] { background: var(--pencil-soft); color: var(--pencil); font-weight: 500; }
 
-.shell { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(420px, 640px); min-height: 0; }
+.shell { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(420px, 640px); grid-template-rows: minmax(0, 1fr); min-height: 0; }
+/* Grid items default to a content-sized minimum, which would let a long file push the composer off screen */
+.shell > * { min-height: 0; }
 @media (max-width: 900px) {
 	.shell { grid-template-columns: minmax(0, 1fr); }
 	.file { display: none; }
 }
 
 /* File pane in the Electron shell. */
-.file { border-right: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; background: var(--ground); }
+.file { border-right: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; overflow: hidden; background: var(--ground); }
 .file-title { padding: 8px 16px; border-bottom: 1px solid var(--line); color: var(--ink-2); font-family: var(--file); font-size: 12px; }
-.file-body { overflow: auto; padding: 12px 0; font: 13px/1.6 var(--file); }
+.file-body { overflow: auto; padding: 12px 0; font: 13px/1.6 var(--file); tab-size: 4; }
 .file-body .ln { display: grid; grid-template-columns: 44px 1fr; white-space: pre; }
 .file-body .ln:hover { background: var(--pencil-soft); }
 .file-hint { margin: 0; padding: 0 16px; color: var(--ink-3); }
@@ -194,7 +196,7 @@ button { cursor: pointer; }
 .edit .head .title { font-weight: 500; }
 .edit .head .range { color: var(--ink-2); }
 .edit .head .seg { margin-left: auto; }
-.edit .body { overflow-x: auto; font: 13px/1.5 var(--file); padding: 8px 0; }
+.edit .body { overflow-x: auto; font: 13px/1.5 var(--file); padding: 8px 0; tab-size: 4; }
 .edit .ln { display: grid; grid-template-columns: 40px 16px 1fr; white-space: pre; color: var(--ink-2); }
 .edit .ln > .n { text-align: right; padding-right: 10px; color: var(--ink-3); user-select: none; }
 .edit .ln > .m { color: var(--ink-3); }

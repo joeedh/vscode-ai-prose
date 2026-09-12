@@ -318,6 +318,7 @@ export class Session {
 				range = { start, end: start + newLines.length };
 				this.unit = { ...unit, range, original: restored, text: prose };
 				thread.unit = { ...thread.unit!, range, original: restored, text: prose };
+				this.emit({ type: "galley", unit: this.unit });
 			} catch (e) {
 				error = e instanceof Error ? e.message : String(e);
 				finalStatus = "rejected";

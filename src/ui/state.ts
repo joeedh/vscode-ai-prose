@@ -98,8 +98,11 @@ export function reduce(state: State, action: Action): State {
 			return { ...state, running: false };
 		case "error":
 			return { ...state, running: false, entries: [...state.entries, { kind: "error", message: msg.message, fix: msg.fix }] };
-		case "threads":
-			return { ...state, threads: { current: msg.current, other: msg.other } };
+		case "threads": {
+			// The list carries the current thread's header too, which is where a new title first shows up
+			const header = msg.current.find((t) => t.id === state.thread?.id);
+			return { ...state, thread: header ?? state.thread, threads: { current: msg.current, other: msg.other } };
+		}
 		case "models":
 			return { ...state, models: msg.groups };
 	}
