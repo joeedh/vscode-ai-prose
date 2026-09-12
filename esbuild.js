@@ -51,7 +51,7 @@ const builds = [
 	},
 	{
 		...shared,
-		entryPoints: { ui: "src/ui/main.tsx" },
+		entryPoints: { ui: "src/ui/main.tsx", shell: "src/ui/shell-main.tsx" },
 		format: "esm",
 		platform: "browser",
 		outdir: "dist",

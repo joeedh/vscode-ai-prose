@@ -148,6 +148,8 @@ button { cursor: pointer; }
 .file-title { padding: 8px 16px; border-bottom: 1px solid var(--line); color: var(--ink-2); font-family: var(--file); font-size: 12px; }
 .file-body { overflow: auto; padding: 12px 0; font: 13px/1.6 var(--file); }
 .file-body .ln { display: grid; grid-template-columns: 44px 1fr; white-space: pre; }
+.file-body .ln:hover { background: var(--pencil-soft); }
+.file-hint { margin: 0; padding: 0 16px; color: var(--ink-3); }
 .file-body .ln > .n { text-align: right; padding-right: 14px; color: var(--ink-3); user-select: none; }
 .file-body .ln.unit { box-shadow: inset 2px 0 0 var(--pencil); background: var(--pencil-soft); }
 .file-body .ln.unit > .n { color: var(--pencil); }

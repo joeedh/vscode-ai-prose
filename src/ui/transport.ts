@@ -1,4 +1,5 @@
 import type { HostToUi, UiToHost } from "../core/protocol";
+import type { ElectronBridge } from "../electron/bridge";
 
 /** Carries protocol messages between the app and whichever host loaded it. */
 export interface Transport {
@@ -8,11 +9,6 @@ export interface Transport {
 
 interface VsCodeApi {
 	postMessage(msg: unknown): void;
-}
-
-interface ElectronBridge {
-	post(msg: UiToHost): void;
-	onMessage(cb: (msg: HostToUi) => void): void;
 }
 
 declare global {

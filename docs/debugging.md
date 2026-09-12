@@ -120,3 +120,24 @@ these shapes, so a change here needs a matching change there.
   aliases because they do not start with a grouped prefix.
 - The list is cached for one hour at `~/.aiprose/models.json`. A failed
   refresh falls back to a stale cache when one exists.
+
+## Electron shell
+
+- The shell reads `AIPROSE_PROFILE_DIR` (default `~/.aiprose/electron-profile`),
+  `AIPROSE_CDP_PORT` (default 9337), `AIPROSE_HOME` (where `.aiprose/transcripts`
+  and the model cache live, default the home directory), and `AIPROSE_BASE_URL`.
+- Chromium writes `DevToolsActivePort` into the profile with the port it is
+  actually listening on. The test reads that file, so a wrong port shows up as
+  a mismatch there rather than as a connection refusal.
+- Playwright launches with `--inspect=0` and `--remote-debugging-pipe` of its
+  own. The `appendSwitch` in main.ts still wins for the port, as the test proves.
+- On Windows, `fs.rm` of a profile right after `app.close()` fails with
+  `EBUSY` or `ENOTEMPTY` unless it retries. The fixture waits for the child
+  process `exit` event and then removes with `maxRetries: 10, retryDelay: 200`.
+- The secrets file is `<profile>/secrets.json` with an `openrouterApiKey`
+  field. The "Set key" fix link creates it when missing and opens it in the
+  system editor. Settings live beside it in `settings.json`.
+- Clicking a line in the file pane moves the cursor. If the current thread has
+  no messages yet, it restarts on the block under the new cursor; otherwise
+  the thread stays and the pane still marks the thread's block, not the
+  cursor's. Use New thread to move a started thread.
