@@ -1,6 +1,6 @@
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
-import type { Host } from "../host.js";
+import type { Host, HostDocument } from "../host.js";
 import { chat as defaultChat, listModels as defaultListModels, LlmError, MESSAGES, type ChatResult, type Message, type ToolCall } from "../llm/index.js";
 import { findProseMd } from "../prose-md.js";
 import type { EditProposal, EditResolution, EditStatus, Entry, HostToUi, LineRange, Mode, ModelGroup, UiToHost, Unit, Usage } from "../protocol.js";
@@ -111,10 +111,21 @@ export class Session {
 	async startThread(mode?: Mode): Promise<void> {
 		this.stop();
 		const { host, store } = this.deps;
-		const doc = await host.document();
+		const resolvedMode = mode ?? this.thread?.mode ?? "strict";
+		const model = this.thread?.model;
+		// Cleared first so a host that serves the current thread's file falls back to the editor
+		this.thread = undefined;
+		this.unit = undefined;
+		let doc: HostDocument;
+		try {
+			doc = await host.document();
+		} catch (e) {
+			this.emit({ type: "galley", unit: null, reason: e instanceof Error ? e.message : String(e) });
+			await this.emitThreads("");
+			return;
+		}
 		const cursor = await host.cursor();
 		const config = await host.config();
-		const resolvedMode = mode ?? this.thread?.mode ?? "strict";
 		this.languageId = resolveLanguage(doc.languageId, doc.path) ?? doc.languageId;
 		const detected = detectUnit(doc.text, doc.languageId, doc.path, cursor.line, { wrapColumn: config.wrapColumn });
 		this.unit = detected.ok ? detected.unit : undefined;
@@ -126,7 +137,7 @@ export class Session {
 			filePath: doc.path,
 			languageId: doc.languageId,
 			mode: resolvedMode,
-			model: this.thread?.model ?? config.model,
+			model: model ?? config.model,
 			userPrompt,
 			systemPrompt: buildSystemContent({ userPrompt, proseMd: proseMdText, mode: resolvedMode, width: this.unit?.width ?? 80 }),
 			proseMdPath: "path" in proseMd ? proseMd.path : undefined,
@@ -147,6 +158,8 @@ export class Session {
 	async openThread(id: string): Promise<void> {
 		this.stop();
 		const thread = await this.deps.store.load(id);
+		this.thread = thread;
+		this.unit = undefined;
 		const doc = await this.deps.host.document();
 		this.languageId = resolveLanguage(doc.languageId, doc.path) ?? doc.languageId;
 		let unit: Unit | undefined;
@@ -156,7 +169,6 @@ export class Session {
 				unit = detected.unit;
 			}
 		}
-		this.thread = thread;
 		this.unit = unit;
 		await this.emitThread();
 		if (!unit) {

@@ -141,3 +141,28 @@ these shapes, so a change here needs a matching change there.
   no messages yet, it restarts on the block under the new cursor; otherwise
   the thread stays and the pane still marks the thread's block, not the
   cursor's. Use New thread to move a started thread.
+
+## VS Code extension
+
+- `pnpm test:vscode` runs test/vscode/run.mjs, which sweeps and creates a
+  temp `aiprose-vscode-*` user-data directory, picks a free debugging port,
+  and passes both to .vscode-test.mjs through `AIPROSE_TEST_USER_DATA` and
+  `AIPROSE_TEST_CDP_PORT`. The directory is removed in `finally`.
+- The fake OpenRouter runs inside the extension host, so the test sets
+  `process.env.AIPROSE_BASE_URL` in `suiteSetup` and the host reads it on
+  every `config()` call. `AIPROSE_HOME` points at the user-data directory so
+  transcripts and the model cache stay out of the real home directory.
+- Commands are only registered once the extension activates, and listing
+  commands does not activate it. Tests call `extension.activate()` first and
+  use the API it returns (session, host, panel, and a message event).
+- The webview is an out-of-process iframe. Playwright's `connectOverCDP`
+  sees the outer `iframe.webview.ready` element in the workbench page but
+  never attaches to its content, so `frameLocator` chains time out. The
+  `/json` target list on the debugging port exposes the webview as a target
+  of type `iframe` with a `vscode-webview://` url and its own
+  `webSocketDebuggerUrl`. The test opens that socket and runs
+  `Runtime.evaluate`; the app's `#active-frame` shares the origin, so
+  `contentDocument` reaches the galley.
+- `undo` acts on the focused editor, so a test brings the document back with
+  `showTextDocument` before running it. The write is one `WorkspaceEdit`, so
+  one undo restores the original text.
